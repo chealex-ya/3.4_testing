@@ -4,8 +4,8 @@ from model_bakery import baker
 from students.models import Student, Course
 import random as rand
 
+#вызов теста: python3 -m pytest
 
-# python3 -m pytest
 
 @pytest.fixture
 def client():
@@ -15,6 +15,12 @@ def client():
 def course_factory(*args, **kwargs):
     def factory(*args, **kwargs):
         return baker.make(Course, *args, **kwargs)
+    return factory
+
+@pytest.fixture
+def student_factory(*args, **kwargs):
+    def factory(*args, **kwargs):
+        return baker.make(Student, *args, **kwargs)
     return factory
 
 @pytest.mark.django_db
@@ -90,14 +96,18 @@ def test_5_create_one_course(client):
     assert Course.objects.count() == count + 1
 
 @pytest.mark.django_db
-def test_6_update_1_course(client, course_factory):
+def test_6_update_1_course(client, course_factory, student_factory):
 
     courses = course_factory(_quantity = 10)
+    student = student_factory(_quantity = 10)
 
     x = rand.randrange(1, 10)
+    y = rand.randrange(1, 10)
 
-    id = courses[x].id
-    response = client.put(f"/api/v1/courses/{id}/", data={'name': 'test'})
+    id_course = courses[x].id
+    id_student = student[y].id
+
+    response = client.put(f"/api/v1/courses/{id_course}/", data={'name': 'test', 'student': id_student})
 
     assert response.status_code == 200
 
@@ -115,3 +125,4 @@ def test_7_delete_1_course(client, course_factory):
     response = client.delete(f"/api/v1/courses/{id}/")
 
     assert response.status_code == 204
+
